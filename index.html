@@ -310,9 +310,8 @@ function initApp(data) {
 		e.preventDefault(); // ❗ отменяем стандартную отправку
 		const form = $(this);
 		$.ajax({
-			url: form.attr("action"),   // куда отправлять
-			type: form.attr("method"),  // GET / POST
-			data: form.serialize()+"&response_json=1",     // собираем данные формы
+			url: form.attr("action")+"&"+form.serialize(),   // куда отправлять
+			type: "GET",
 			success: function(response) {
 				$("#form_loading").html(response.html_report);
 			},
