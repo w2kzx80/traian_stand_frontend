@@ -210,6 +210,80 @@
 				console.error(err);
 			});
 		
+		function transformSchedule(oldSchedule) {
+			const newSchedule = {};
+
+			for (const name in oldSchedule) 
+			{
+				for (const stand in oldSchedule[name]) 
+				{
+
+					if (!newSchedule[stand]) 
+					{
+						newSchedule[stand] = {};
+					}
+
+					for (const day in oldSchedule[name][stand]) 
+					{
+
+						if (!newSchedule[stand][day]) 
+						{
+							newSchedule[stand][day] = {};
+						}
+
+						for (const time in oldSchedule[name][stand][day]) 
+						{
+
+							if (!newSchedule[stand][day][time]) 
+							{
+								newSchedule[stand][day][time] = {};
+							}
+
+							// добавляем текущего пользователя
+							newSchedule[stand][day][time][name] = true;
+
+							// если внутри уже были publisher'ы — переносим их
+							for (const publisher in oldSchedule[name][stand][day][time]) 
+							{
+								newSchedule[stand][day][time][publisher] = true;
+							}
+						}
+					}
+				}
+			}
+
+			// --- СОРТИРОВКА ---
+			const sortedSchedule = {};
+
+			for (const stand in newSchedule) 
+			{
+
+				sortedSchedule[stand] = {};
+
+				// сортируем дни по дате
+				const sortedDays = Object.keys(newSchedule[stand]).sort((a, b) => {
+					return parseDate(a) - parseDate(b);
+				});
+
+				for (const day of sortedDays) 
+				{
+
+					sortedSchedule[stand][day] = {};
+
+					// сортируем время численно
+					const sortedTimes = Object.keys(newSchedule[stand][day]).sort((a, b) => {
+						return Number(a) - Number(b);
+					});
+
+					for (const time of sortedTimes) {
+						sortedSchedule[stand][day][time] = newSchedule[stand][day][time];
+					}
+				}
+			}
+
+			return sortedSchedule;
+		}
+
 		function update_schedule()
     	{
 			si=0;
@@ -230,7 +304,7 @@
 			}
 			$('#stands_tabs').html("");
 			si=0;
-			for (stand in schedule[name])
+			for (stand in schedule)
 			{
 				si++;
 				tclass=(si===1)?'show active':'';
@@ -301,6 +375,7 @@
 				colors,
 				colors_light
 			} = data);
+			schedule = transformSchedule(schedule);
 
 			$("#smiles").html(smiles);
 			$("#name").html(default_name);
