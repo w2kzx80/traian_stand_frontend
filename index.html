@@ -312,10 +312,9 @@ function initApp(data) {
 		$.ajax({
 			url: form.attr("action"),   // куда отправлять
 			type: form.attr("method"),  // GET / POST
-			data: form.serialize(),     // собираем данные формы
+			data: form.serialize()+"&response_json=1",     // собираем данные формы
 			success: function(response) {
-				console.log("Успех:", response);
-				$("#form_loading").html(response);
+				$("#form_loading").html(response.html_report);
 			},
 			error: function(err) {
 				console.log("Ошибка:", err);
