@@ -279,7 +279,8 @@ fetch(`${GAS_URL}?page=formparameters&chatId=${encodeURIComponent(chatId)}`)
 		console.error(err);
 	});
 
-function initApp(data) {
+function initApp(data) 
+{
 
 	$(".miniapp_c").show();
 	$("#form_loading").addClass("d-none").removeClass("d-flex");
@@ -347,8 +348,7 @@ function initApp(data) {
 		}
 		$(`#stand${si}`).css('--stand-color', colors[stand]);
 	}
-
-	$("#form").attr("action",webAppUrl);
+	
 	$("#form").on("submit",function(e) {
 		var ok=true;
 		if (!$("select[name=name]").val())
