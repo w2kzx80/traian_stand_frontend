@@ -209,7 +209,12 @@
 				alert("Ошибка загрузки данных");
 				console.error(err);
 			});
-		
+		function parseDate(dayString) {
+			// "ПОНЕДЕЛЬНИК, 16.02.2026"
+			const [, dateStr] = dayString.split(", ");
+			const [dd, mm, yyyy] = dateStr.split(".").map(Number);
+			return new Date(yyyy, mm - 1, dd);
+		}
 		function transformSchedule(oldSchedule) {
 			const newSchedule = {};
 
