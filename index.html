@@ -221,9 +221,10 @@ function initApp(data) {
 	// --- publishers ---
 	for (let publisher in publishers)
 	{
-		$("select[name=name]").append(`<option value="${publisher}">${publisher}</option>`);
+		selected=(publisher==default_name)?'selected':'';
+		$("select[name=name]").append(`<option value="${publisher}" ${selected} >${publisher}</option>`);
 	}
-	$("select[name=name]").val(default_name).trigger("change");
+	// $("select[name=name]").val(default_name).trigger("change");
 	var si=0;
 	for (stand in schedule)
 	{
