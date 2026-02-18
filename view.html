@@ -33,6 +33,9 @@
         cursor: pointer;
         transition: all 0.15s ease;
       }
+	  .checkbox-square .label.available {
+        background: #00ff00;
+      }
 
       .checkbox-square .label:hover {
         background: #e5e7eb;
@@ -403,8 +406,9 @@
 							}
 							companions+=(companions=='')?pname:', '+pname;
 						}
+						var cl=(available[stand][day].includes(String(time)))?'available':'';
 						$(`#stand${si} .checkboxes${di}`).append(`<div class="checkbox-square">
-									<div class="label">${time}</div>
+									<div class="label ${cl}">${time}</div>
 									<span class="name fs-6 fst-italic">${companions}</span>
 								</div>`);
 					}
@@ -433,6 +437,7 @@
 		var schedule=[];
 		var colors={};
 		var colors_light={};
+		var available={};
 		function initApp(data) 
 		{
 			$(".miniapp_c").show();
