@@ -279,6 +279,82 @@
 
 			return sortedSchedule;
 		}
+		function mergeAvailableToSchedule(schedule, available) \
+		{
+
+			if (!available || typeof available !== "object") {
+				return schedule;
+			}
+
+			// Проходим по стендам
+			for (const stand in available) 
+			{
+
+				if (!schedule[stand]) 
+				{
+					schedule[stand] = {};
+				}
+
+				const standDays = available[stand];
+
+				if (!standDays || typeof standDays !== "object") continue;
+
+				// Проходим по дням
+				for (const day in standDays) 
+				{
+
+					if (!schedule[stand][day]) 
+					{
+						schedule[stand][day] = {};
+					}
+
+					const timesArray = standDays[day];
+
+					if (!Array.isArray(timesArray)) continue;
+
+					// Проходим по временам
+					for (const time of timesArray) 
+					{
+
+						const timeStr = String(time);
+
+						// Если такого времени ещё нет — создаём пустой объект
+						if (!schedule[stand][day][timeStr]) 
+						{
+							schedule[stand][day][timeStr] = {};
+						}
+					}
+				}
+			}
+
+			// --- Повторная сортировка (та же логика что у тебя) ---
+			const sortedSchedule = {};
+
+			for (const stand in schedule) 
+			{
+
+				sortedSchedule[stand] = {};
+
+				const sortedDays = Object.keys(schedule[stand]).sort((a, b) => {
+					return parseDate(a) - parseDate(b);
+				});
+
+				for (const day of sortedDays) {
+
+					sortedSchedule[stand][day] = {};
+
+					const sortedTimes = Object.keys(schedule[stand][day]).sort((a, b) => {
+						return Number(a) - Number(b);
+					});
+
+					for (const time of sortedTimes) {
+						sortedSchedule[stand][day][time] = schedule[stand][day][time];
+					}
+				}
+			}
+
+			return sortedSchedule;
+		}
 
 		function update_schedule()
     	{
@@ -369,9 +445,11 @@
 				publisher_usernames,
 				schedule,
 				colors,
-				colors_light
+				colors_light,
+				available
 			} = data);
 			schedule = transformSchedule(schedule);
+			schedule = mergeAvailableToSchedule(schedule, available);
 
 			$("#smiles").html(smiles);
 			$("#name").html(default_name);
