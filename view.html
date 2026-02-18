@@ -46,9 +46,9 @@
         min-width: 70px;   /* фиксированная ширина времени */
         padding: 0 12px;
         border-radius: 4px;
-        background: #ff0000;
+        /* background: #ff0000; */
         font-weight: 500;
-        color: #444;
+        color: #e00000;
         cursor: pointer;
         transition: all 0.15s ease;
       }
@@ -162,14 +162,22 @@
       }
     </style>
     <div class="miniapp_c">
-
-        Привет, <span id="name"></span>!
-    	<ul class="nav nav-tabs nav-fill" id="stands_menu" role="tablist">
-          
-        </ul>
-        <div class="tab-content" id="stands_tabs">
-          
-        </div>
+		<form id="form" class="miniapp_f" method="post" target="_top">
+			<input type="hidden" name="chatId"/>
+			<div class="d-flex align-items-center mb-3">
+				<select class="form-select me-2 required" name="name" style="flex: 1;">
+					<option value="" selected disabled>ФИО</option>
+				</select>
+			</div>
+			
+			<ul class="nav nav-tabs nav-fill" id="stands_menu" role="tablist">
+			
+			</ul>
+			<div class="tab-content" id="stands_tabs">
+			
+			</div>
+		    <input class="miniapp_s btn btn-success" type="submit" value="Отправить">
+	    </form>
     </div>
     <div id="form_loading" class="d-none flex-column justify-content-center align-items-center text-center">
 		<span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>
@@ -184,6 +192,12 @@
 		} else {
 			console.log("chatId не найден в URL");
 		}
+
+		const $chatInput = $('input[name=chatId]');
+		if ($chatInput.length) {
+			$chatInput.val(chatId);
+		}
+
 		try 
 		{
 			const tg = window.Telegram?.WebApp;
@@ -195,7 +209,8 @@
 				if (tg.initDataUnsafe?.user?.id) 
 				{
 					chatId = tg.initDataUnsafe.user.id; // получаем chatId из Telegram
-					console.log(`chatId взят из Telegram API: ${chatId}`);
+					if ($chatInput.length) $chatInput.val(chatId);
+            		console.log(`chatId взят из Telegram API: ${chatId}`);
 				}
 			}
 		} catch (e) {
@@ -435,10 +450,10 @@
 						}
 						else
 						{
-							$(`#stand${si} .checkboxes${di}`).append(`<div class="checkbox-square">
-										<div class="label">${time}</div>
-										<span class="name fs-6 fst-italic">${companions}</span>
-									</div>`);
+							// $(`#stand${si} .checkboxes${di}`).append(`<div class="checkbox-square unavailable">
+							// 			<div class="label">${time}</div>
+							// 			<span class="name fs-6 fst-italic">${companions}</span>
+							// 		</div>`);
 						}
 					}
 				}
@@ -485,10 +500,43 @@
 			schedule = mergeAvailableToSchedule(schedule, available);
 
 			$("#smiles").html(smiles);
-			$("#name").html(default_name);
+			for (let publisher in publishers)
+			{
+				selected=(publisher==default_name)?'selected':'';
+				$("select[name=name]").append(`<option value="${publisher}" ${selected} >${publisher}</option>`);
+			}
 			update_schedule();
 			$('button[data-bs-toggle="tab"]').on('shown.bs.tab', function () {
 				updateTabColors();
+			});
+
+			$("#form").on("submit",function(e) {
+				var ok=true;
+				if (!$("select[name=name]").val())
+				{
+					alert("Заполните ФИО 🙂");
+					return false;
+				}
+				else if ($("input[type=checkbox]:checked").length<1)
+				{
+					alert("Нужно выбрать хотя бы одну дату и время 🙂");
+					return false;
+				}
+				
+				$(".miniapp_c").hide();
+				$("#form_loading").removeClass("d-none").addClass("d-flex");
+
+				e.preventDefault(); // ❗ отменяем стандартную отправку
+				const form = $(this);
+				fetch(`${GAS_URL}?page=submit&${form.serialize()}`)
+					.then(r => r.json())
+					.then(data => {
+						$("#form_loading").html(data.html_report);
+					})
+					.catch(err => {
+						alert("Ошибка загрузки данных");
+						console.error(err);
+					});
 			});
 		}
     </script>
