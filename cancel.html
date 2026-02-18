@@ -306,19 +306,25 @@
 			}
 			});
 		}
+		var smiles=false;
+		var default_name=false;
+		var publisher_usernames=[];
+		var schedule=[];
+		var colors={};
+		var colors_light={};
 		function initApp(data) 
 		{
 			$(".miniapp_c").show();
 			$("#form_loading").addClass("d-none").removeClass("d-flex");
 
-			const {
+			({
 				smiles,
 				default_name,
 				publisher_usernames,
 				schedule,
 				colors,
 				colors_light
-			} = data;
+			} = data);
 
 			$("#smiles").html(smiles);
 			$("#name").html(default_name);
