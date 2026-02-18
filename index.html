@@ -176,11 +176,49 @@
 
 const GAS_URL = "https://script.google.com/macros/s/AKfycbzHB-6irK3Uqc-W8N8dY34YnE-k6bIgoruGApK79W0qK-r54G3j4XYn0k1jjSx5lV-Gig/exec";
 
+// // --- Получаем chatId из URL ---
+// const params = new URLSearchParams(window.location.search);
+// const chatId = params.get("chatId") || "";
+// $("input[name=chatId]").val(chatId);
+
+// try {
+// 	const tg = window.Telegram.WebApp;
+// 	tg.ready();
+// 	tg.expand();
+// } catch(e) {}
+
+// --- Получаем chatId из URL ---
+const params = new URLSearchParams(window.location.search);
+let chatId = params.get("chatId") || "";
+
+if (chatId) {
+    console.log(`chatId взят из URL: ${chatId}`);
+} else {
+    console.log("chatId не найден в URL");
+}
+
+// --- Заполняем input, если он есть ---
+const $chatInput = $('input[name=chatId]');
+if ($chatInput.length) {
+    $chatInput.val(chatId);
+}
+
+// --- Проверяем Telegram Web App ---
 try {
-	const tg = window.Telegram.WebApp;
-	tg.ready();
-	tg.expand();
-} catch(e) {}
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+        tg.ready();
+        tg.expand();
+
+        if (tg.initDataUnsafe?.user?.id) {
+            chatId = tg.initDataUnsafe.user.id; // получаем chatId из Telegram
+            if ($chatInput.length) $chatInput.val(chatId);
+            console.log(`chatId взят из Telegram API: ${chatId}`);
+        }
+    }
+} catch (e) {
+    console.warn("Telegram WebApp недоступен или произошла ошибка:", e);
+}
 
 function isDatePast(dateStr)
 {
@@ -188,11 +226,6 @@ function isDatePast(dateStr)
 	const today = new Date().toISOString().split('T')[0];
 	return formatted < today;
 }
-
-// --- Получаем chatId из URL ---
-const params = new URLSearchParams(window.location.search);
-const chatId = params.get("chatId") || "";
-$("input[name=chatId]").val(chatId);
 
 $(".miniapp_c").hide();
 $("#form_loading").removeClass("d-none").addClass("d-flex");
