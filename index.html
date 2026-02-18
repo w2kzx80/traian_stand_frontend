@@ -212,15 +212,10 @@ try {
         tg.expand();
 
         if (tg.initDataUnsafe?.user?.id) {
-			alert("User "+tg.initDataUnsafe.user.id);
-            chatId = tg.initDataUnsafe.user.id; // получаем chatId из Telegram
+			chatId = tg.initDataUnsafe.user.id; // получаем chatId из Telegram
             if ($chatInput.length) $chatInput.val(chatId);
             console.log(`chatId взят из Telegram API: ${chatId}`);
         }
-		else
-		{
-			alert("No user data");
-		}
 		try {
 			if (typeof tg.checkHomeScreenStatus !== "function") 
 			{
