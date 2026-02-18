@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Запись на стенд</title>
+  <base target="_top">
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+
+<body>
+	<style>
+      .checkbox-square {
+        width: 100%;
+      }
+
+      .checkbox-square input {
+        display: none;
+      }
+
+      .checkbox-square label {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 38px;
+        width: 100%;
+        border-radius: 4px;
+        background: #f3f4f6;
+        font-weight: 500;
+        color: #444;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+
+      .checkbox-square label:hover {
+        background: #e5e7eb;
+      }
+
+      .checkbox-square input:checked + label {
+        background: var(--stand-color);
+        color: white;
+      }
+      
+      .miniapp_c {
+        position: relative;
+        padding-bottom: 70px; /* Отступ для кнопки внизу */
+      }
+
+      /* Контент формы с прокруткой */
+      .miniapp_f {
+        max-height: calc(100vh - 80px); /* Высота с учетом отступа от кнопки */
+        overflow-y: auto; /* Прокрутка по вертикали */
+        padding: 20px;
+      }
+
+      /* Фиксированная кнопка внизу */
+      .miniapp_s {
+        position: fixed;
+        bottom: 20px; /* Расположение кнопки на экране */
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 10px 20px;
+        font-size: 16px;
+        z-index: 10; /* Чтобы кнопка была поверх остального контента */
+      }
+      .minispan
+      {
+        font-size:9px;
+      }
+      #form_loading
+      {
+        display:none !important;
+        height:150px;
+      }
+      
+
+      #stands_menu {
+        display: flex;
+        gap: 4px;
+        flex-wrap: nowrap;      /* запрещаем перенос */
+        overflow-x: auto;       /* если не влезет — можно скроллить */
+      }
+
+      #stands_menu .nav-item {
+        flex: 0 0 auto;         /* НЕ растягивать */
+      }
+
+      .stand-tab {
+        border: none;
+        background: #f3f4f6;
+        color: #555;
+        transition: all 0.2s ease;
+      }
+
+      .stand-tab:not(.active) {
+        opacity: 0.6;
+      }
+
+      .stand-tab:not(.active):hover {
+        opacity: 0.85;
+      }
+
+      .stand-tab.active {
+        color: white;
+      }
+
+      .stand-card {
+        background: #ffffff;
+        border-radius: 4px;
+        box-shadow: 0 6px 24px rgba(0,0,0,0.04);
+        border-left: 6px solid var(--stand-color);
+        padding: 24px;
+      }
+      day-title {
+        font-size: 15px;
+        font-weight: 500;
+        color: #222;
+      }
+      .miniapp_s {
+        border-radius: 16px;
+        padding: 12px 24px;
+        font-weight: 500;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      }
+      .day-block {
+        padding: 16px 0;
+      }
+
+      .day-block:not(:last-child) {
+        border-bottom: 1px solid #ececec;
+      }
+
+      .time-grid {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 8px;
+        margin-top: 10px;
+      }
+      @media (max-width: 480px) {
+        .time-grid {
+          grid-template-columns: repeat(4, 1fr);
+        }
+      }
+    </style>
+<div class="miniapp_c">
+
+	<form id="form" class="miniapp_f" method="post" target="_top">
+        <input type="hidden" name="chatId"/>
+        <div class="d-flex align-items-center mb-3">
+          <select class="form-select me-2 required" name="name" style="flex: 1;">
+            <option value="" selected disabled>ФИО</option>
+          </select>
+
+          <button id="installBtn" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-cloud-arrow-down"></i>
+          </button>
+        </div>
+        <ul class="nav nav-tabs nav-fill" id="stands_menu" role="tablist">
+          
+        </ul>
+        <div class="tab-content" id="stands_tabs">
+          
+        </div>
+        <input class="miniapp_s btn btn-success" type="submit" value="Отправить">
+    </form>
+
+  	<div id="form_loading" class="d-none flex-column justify-content-center align-items-center text-center">
+		<span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>
+		<span class="fs-5 mt-2">Подождите немного, данные загружаются.. <?!= smiles ?></span>
+    </div>
+
+</div>
+
+<script>
+
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzHB-6irK3Uqc-W8N8dY34YnE-k6bIgoruGApK79W0qK-r54G3j4XYn0k1jjSx5lV-Gig/exec";
+
+try {
+	const tg = window.Telegram.WebApp;
+	tg.ready();
+	tg.expand();
+} catch(e) {}
+
+function isDatePast(dateStr)
+{
+	const formatted = (dateStr.split(',')[1]).trim().split('.').reverse().join('-');
+	const today = new Date().toISOString().split('T')[0];
+	return formatted < today;
+}
+
+// --- Получаем chatId из URL ---
+const params = new URLSearchParams(window.location.search);
+const chatId = params.get("chatId") || "";
+$("input[name=chatId]").val(chatId);
+
+// --- Загружаем данные ---
+fetch(`${GAS_URL}?page=formparameters&chatId=${encodeURIComponent(chatId)}`)
+	.then(r => r.json())
+	.then(data => initApp(data))
+	.catch(err => {
+		alert("Ошибка загрузки данных");
+		console.error(err);
+	});
+
+function initApp(data) {
+
+	const {
+		smiles,
+		default_name,
+		publishers,
+		schedule,
+		colors,
+		colors_light,
+		webAppUrl
+	} = data;
+
+	// --- publishers ---
+	for (let publisher in publishers)
+	{
+		$("select[name=name]").append(`<option value="${publisher}">${publisher}</option>`);
+	}
+	$("select[name=name]").val(default_name);
+	var si=0;
+	for (stand in schedule)
+	{
+		si++;
+		tclass=(si===1)?'active':'';
+		$("#stands_menu").append(`<li class="nav-item" role="presentation">
+					<button class="nav-link stand-tab ${tclass}" 
+					data-color="${colors[stand]}"
+					data-bs-toggle="tab" 
+					data-bs-target="#stand${si}" 
+					type="button" 
+					role="tab">
+					${stand}
+					</button>
+				</li>`);
+	}
+
+	si=0;
+	var checkbox_index=0;
+	for (stand in schedule)
+	{
+		si++;
+		tclass=(si===1)?'show active':'';
+
+		$('#stands_tabs').append(`<div class="tab-pane fade ${tclass}" id="stand${si}" role="tabpanel">
+				<div class="card stand-card p-4" data-color="${colors[stand]}">
+				</div>
+				</div>`);
+		$(`#stand${si} .stand-card`).css('--stand-color', colors[stand]);
+		var di=0;
+		for (day in schedule[stand]) if (!isDatePast(day))
+		{
+			di++;
+			$(`#stand${si} .card`).append(`<div class="day-block"><div class="day-title mb-2">${day}</div><div class="time-grid checkboxes${di}"></div></div>`);
+			for (time in schedule[stand][day])
+			{
+			checkbox_index++;
+			$(`#stand${si} .checkboxes${di}`).append(`<div class="checkbox-square">
+						<input type="checkbox" id="cb_${checkbox_index}" name="times[]" value="${day}, ${stand}, ${schedule[stand][day][time]}"/>
+						<label for="cb_${checkbox_index}">${schedule[stand][day][time]}</label>
+					</div>`);
+			}
+		}
+		$(`#stand${si}`).css('--stand-color', colors[stand]);
+	}
+
+	$("#form").attr("action",webAppUrl);
+	$("#form").on("submit",function() {
+		var ok=true;
+		if (!$("select[name=name]").val())
+		{
+			alert("Заполните ФИО 🙂");
+			return false;
+		}
+		else if ($("input[type=checkbox]:checked").length<1)
+		{
+			alert("Нужно выбрать хотя бы одну дату и время 🙂");
+			return false;
+		}
+		
+		// const formData = new FormData($("#form")[0]);
+		// fetch($("#form").attr("action"), {
+		//   method: 'POST',
+		//   body: formData
+		// })
+		// .then(function (response) {
+		//   return response.text();
+		// })
+		// .then(function (text) {
+		//   alert(text);
+		// })
+		// .catch(function (err) {
+		//   alert(String(err));
+		// });
+		// return false;
+		$(".miniapp_c").hide();
+		$("#form_loading").removeClass("d-none").addClass("d-flex");
+	});
+	$("select[name=name]").val("<?= default_name ?>");
+
+	function updateTabColors() {
+		$(".stand-tab").each(function() {
+			const color = $(this).data("color");
+
+			if ($(this).hasClass("active")) {
+			$(this).css("background-color", color);
+			$(this).css("color", "#fff");
+			} else {
+			$(this).css("background-color", "#f3f4f6");
+			$(this).css("color", "#555");
+			}
+		});
+	}
+
+	updateTabColors();
+
+	$('button[data-bs-toggle="tab"]').on('shown.bs.tab', function () {
+		updateTabColors();
+	});
+}
+</script>
+
+</body>
+</html>
