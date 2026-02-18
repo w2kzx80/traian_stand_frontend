@@ -478,6 +478,7 @@
 		var smiles=false;
 		var default_name=false;
 		var publisher_usernames=[];
+		var publishers=[];
 		var schedule=[];
 		var colors={};
 		var colors_light={};
@@ -491,6 +492,7 @@
 				smiles,
 				default_name,
 				publisher_usernames,
+				publishers,
 				schedule,
 				colors,
 				colors_light,
@@ -522,7 +524,7 @@
 					alert("Нужно выбрать хотя бы одну дату и время 🙂");
 					return false;
 				}
-				
+
 				$(".miniapp_c").hide();
 				$("#form_loading").removeClass("d-none").addClass("d-flex");
 
