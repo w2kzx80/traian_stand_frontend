@@ -223,7 +223,7 @@ function initApp(data) {
 	{
 		$("select[name=name]").append(`<option value="${publisher}">${publisher}</option>`);
 	}
-	$("select[name=name]").val(default_name);
+	$("select[name=name]").val(default_name).trigger("change");
 	var si=0;
 	for (stand in schedule)
 	{
