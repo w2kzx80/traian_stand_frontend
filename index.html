@@ -276,7 +276,7 @@ function initApp(data) {
 	}
 
 	$("#form").attr("action",webAppUrl);
-	$("#form").on("submit",function() {
+	$("#form").on("submit",function(e) {
 		var ok=true;
 		if (!$("select[name=name]").val())
 		{
@@ -306,6 +306,21 @@ function initApp(data) {
 		// return false;
 		$(".miniapp_c").hide();
 		$("#form_loading").removeClass("d-none").addClass("d-flex");
+
+		e.preventDefault(); // ❗ отменяем стандартную отправку
+		const form = $(this);
+		$.ajax({
+			url: form.attr("action"),   // куда отправлять
+			type: form.attr("method"),  // GET / POST
+			data: form.serialize(),     // собираем данные формы
+			success: function(response) {
+				console.log("Успех:", response);
+				$("#form_loading").html(response);
+			},
+			error: function(err) {
+				console.log("Ошибка:", err);
+			}
+		});
 	});
 
 	function updateTabColors() {
