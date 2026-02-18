@@ -309,16 +309,15 @@ function initApp(data) {
 
 		e.preventDefault(); // ❗ отменяем стандартную отправку
 		const form = $(this);
-		$.ajax({
-			url: form.attr("action")+"&"+form.serialize(),   // куда отправлять
-			type: "GET",
-			success: function(response) {
-				$("#form_loading").html(response.html_report);
-			},
-			error: function(err) {
-				console.log("Ошибка:", err);
-			}
-		});
+		fetch(`${GAS_URL}?page=submit&${form.serialize()}`)
+			.then(r => r.json())
+			.then(data => {
+				$("#form_loading").html(data.html_report);
+			})
+			.catch(err => {
+				alert("Ошибка загрузки данных");
+				console.error(err);
+			});
 	});
 
 	function updateTabColors() {
