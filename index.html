@@ -170,7 +170,7 @@
 
   	<div id="form_loading" class="d-none flex-column justify-content-center align-items-center text-center">
 		<span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>
-		<span class="fs-5 mt-2">Подождите немного, данные загружаются.. <?!= smiles ?></span>
+		<span class="fs-5 mt-2">Подождите немного, данные загружаются.. <span id="smiles"></span></span>
     </div>
 
 </div>
@@ -217,7 +217,8 @@ function initApp(data) {
 		colors_light,
 		webAppUrl
 	} = data;
-
+	
+	$("#smiles").html(smiles);
 	// --- publishers ---
 	for (let publisher in publishers)
 	{
@@ -303,7 +304,6 @@ function initApp(data) {
 		$(".miniapp_c").hide();
 		$("#form_loading").removeClass("d-none").addClass("d-flex");
 	});
-	$("select[name=name]").val("<?= default_name ?>");
 
 	function updateTabColors() {
 		$(".stand-tab").each(function() {
