@@ -197,6 +197,9 @@ const params = new URLSearchParams(window.location.search);
 const chatId = params.get("chatId") || "";
 $("input[name=chatId]").val(chatId);
 
+$(".miniapp_c").hide();
+$("#form_loading").removeClass("d-none").addClass("d-flex");
+	
 // --- Загружаем данные ---
 fetch(`${GAS_URL}?page=formparameters&chatId=${encodeURIComponent(chatId)}`)
 	.then(r => r.json())
@@ -208,6 +211,9 @@ fetch(`${GAS_URL}?page=formparameters&chatId=${encodeURIComponent(chatId)}`)
 
 function initApp(data) {
 
+	$(".miniapp_c").show();
+	$("#form_loading").addClass("d-none").removeClass("d-flex");
+
 	const {
 		smiles,
 		default_name,
@@ -217,7 +223,7 @@ function initApp(data) {
 		colors_light,
 		webAppUrl
 	} = data;
-	
+
 	$("#smiles").html(smiles);
 	// --- publishers ---
 	for (let publisher in publishers)
