@@ -19,7 +19,11 @@
         gap: 12px;
       }
 
-      .checkbox-square .label {
+      .checkbox-square input {
+        display: none;
+      }
+
+	  .checkbox-square label {
         display: inline-flex;
         justify-content: center;
         align-items: center;
@@ -33,12 +37,25 @@
         cursor: pointer;
         transition: all 0.15s ease;
       }
-	  .checkbox-square .label.available {
-        background: #00ff00;
+
+      .checkbox-square .label {
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        height: 38px;
+        min-width: 70px;   /* фиксированная ширина времени */
+        padding: 0 12px;
+        border-radius: 4px;
+        background: #ff0000;
+        font-weight: 500;
+        color: #444;
+        cursor: pointer;
+        transition: all 0.15s ease;
       }
 
-      .checkbox-square .label:hover {
-        background: #e5e7eb;
+	  .checkbox-square input:checked + label {
+        background: var(--stand-color);
+        color: white;
       }
 
       .checkbox-square .name {
@@ -378,6 +395,7 @@
 			}
 			$('#stands_tabs').html("");
 			si=0;
+			var checkbox_index=0;
 			for (stand in schedule)
 			{
 				si++;
@@ -406,11 +424,22 @@
 							}
 							companions+=(companions=='')?pname:', '+pname;
 						}
-						var cl=(available[stand][day].includes(String(time)))?'available':'';
-						$(`#stand${si} .checkboxes${di}`).append(`<div class="checkbox-square">
-									<div class="label ${cl}">${time}</div>
+						if (available[stand][day].includes(String(time)))
+						{
+							checkbox_index++;
+							$(`#stand${si} .checkboxes${di}`).append(`<div class="checkbox-square">
+									<input type="checkbox" id="cb_${checkbox_index}" name="times[]" value="${day}, ${stand}, ${time}"/>
+									<label for="cb_${checkbox_index}">${time}</label>
 									<span class="name fs-6 fst-italic">${companions}</span>
-								</div>`);
+									</div>`);
+						}
+						else
+						{
+							$(`#stand${si} .checkboxes${di}`).append(`<div class="checkbox-square">
+										<div class="label ${cl}">${time}</div>
+										<span class="name fs-6 fst-italic">${companions}</span>
+									</div>`);
+						}
 					}
 				}
 				$(`#stand${si}`).css('--stand-color', colors[stand]);
