@@ -251,17 +251,31 @@
 				var checkbox_index=0;
 				for (stand in schedule[name])
 				{
-					si++;
-					tclass=(si===1)?'show active':'';
-					$('#stands_tabs').append(`<div class="tab-pane fade ${tclass}" id="stand${si}" role="tabpanel">
-						<div class="card stand-card p-4" data-color="${colors[stand]}">
-						</div>
-					</div>`);
-					$(`#stand${si} .stand-card`).css('--stand-color', colors[stand]);
-					tab_init=true;
+					var stand_added=false;
+
+					// si++;
+					// tclass=(si===1)?'show active':'';
+					// $('#stands_tabs').append(`<div class="tab-pane fade ${tclass}" id="stand${si}" role="tabpanel">
+					// 	<div class="card stand-card p-4" data-color="${colors[stand]}">
+					// 	</div>
+					// </div>`);
+					// $(`#stand${si} .stand-card`).css('--stand-color', colors[stand]);
+					
 					var di=0;
 					for (day in schedule[name][stand]) if (!isDatePast(day))
 					{
+						if (!stand_added)
+						{
+							si++;
+							tclass=(si===1)?'show active':'';
+							$('#stands_tabs').append(`<div class="tab-pane fade ${tclass}" id="stand${si}" role="tabpanel">
+								<div class="card stand-card p-4" data-color="${colors[stand]}">
+								</div>
+							</div>`);
+							$(`#stand${si} .stand-card`).css('--stand-color', colors[stand]);
+							stand_added=false;
+						}
+
 						di++;
 						$(`#stand${si} .card`).append(`<div class="day-block"><div class="day-title mb-2">${day}</div><div class="time-grid checkboxes${di}"></div></div>`);
 						for (time in schedule[name][stand][day])
@@ -287,6 +301,10 @@
 						}
 					}
 					$(`#stand${si}`).css('--stand-color', colors[stand]);
+				}
+				if (si==0)
+				{
+					$("#stands_tabs").html("Записей пока что нет 🙂");
 				}
 			}
 			updateTabColors();
